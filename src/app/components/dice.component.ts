@@ -1,5 +1,12 @@
-import { Component, input, InputSignal, OnInit, output } from "@angular/core";
-import DieComponent from "./die.component";
+import {
+  Component,
+  input,
+  InputSignal,
+  OnInit,
+  output,
+  ViewEncapsulation,
+} from '@angular/core';
+import DieComponent from './die.component';
 
 @Component({
   selector: 'dice',
@@ -7,15 +14,23 @@ import DieComponent from "./die.component";
   imports: [DieComponent],
   template: `
     @for (d of dice(); track $index) {
-      <die
-        [val]="d"
-        [idx]="$index"
-        [locked]="locked()[$index]"
-        (toggleLocked)="toggleLocked.emit($index)"
-      />
+    <die
+      [val]="d"
+      [idx]="$index"
+      [locked]="locked()[$index]"
+      (toggleLocked)="toggleLocked.emit($index)"
+    />
     }
   `,
-  styles: [``]
+  styles: [
+    `
+      .Dice {
+        margin: 1em;
+        display: flex;
+        justify-content: space-between;
+      }
+    `,
+  ],
 })
 export default class DiceComponent implements OnInit {
   dice: InputSignal<any> = input.required<any>();
@@ -23,8 +38,7 @@ export default class DiceComponent implements OnInit {
 
   toggleLocked = output<number>();
 
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 }

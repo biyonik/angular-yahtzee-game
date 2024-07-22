@@ -1,35 +1,98 @@
-import { Component, input, output } from "@angular/core";
-import { Scores } from "../models/game.state.model";
-import RuleRowComponent from "./rule-row.component";
+import { Component, input, output } from '@angular/core';
+import { Scores } from '../models/game.state.model';
+import RuleRowComponent from './rule-row.component';
 
 @Component({
   selector: 'score-table',
   standalone: true,
   imports: [RuleRowComponent],
   template: `
-    <section class="ScoreTable-section ScoreTable-section-lower">
-      <h2>Lower</h2>
-      <table cellSpacing="0">
-        <tbody>
-          <rule-row
-            [name]="'Three Of A Kind'"
-            [score]="scores().threeOfKind"
-            (doScore)="doScoreHandler($event)"
-          />
-        </tbody>
-      </table>
-    </section>
+    <div class="ScoreTable">
+      <section class="ScoreTable-section">
+        <h2>Upper</h2>
+      </section>
+
+      <section className="ScoreTable-section ScoreTable-section-lower">
+        <h2>Lower</h2>
+        <table cellSpacing="0">
+          <tbody>
+            <rule-row
+              [name]="'Three Of A Kind'"
+              [score]="scores().threeOfKind"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Four Of A Kind'"
+              [score]="scores().fourOfKind"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Full House'"
+              [score]="scores().fullHouse"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Small Straight'"
+              [score]="scores().smallStraight"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Large Straight'"
+              [score]="scores().largeStraight"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Yahtzee'"
+              [score]="scores().yahtzee"
+              (doScore)="doScoreHandler($event)"
+            />
+
+            <rule-row
+              [name]="'Chance'"
+              [score]="scores().chance"
+              (doScore)="doScoreHandler($event)"
+            />
+          </tbody>
+        </table>
+      </section>
+    </div>
   `,
-  styles: [``]
+  styles: [
+    `
+      .ScoreTable {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+        background-color: white;
+        padding: 1em;
+      }
+
+      .ScoreTable table {
+        width: 100%;
+        margin: 0 auto;
+        min-width: 400px;
+      }
+
+      .ScoreTable-section {
+        vertical-align: top;
+        width: 100%;
+      }
+    `,
+  ],
 })
 export default class ScoreTableComponent {
   scores = input.required<Scores>();
 
   doScore = output<any>();
 
-  constructor() { }
+  constructor() {}
 
   doScoreHandler(type: string) {
-    this.doScore.emit(type)
+    this.doScore.emit(type);
   }
 }
