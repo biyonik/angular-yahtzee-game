@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
+import GameComponent from "./components/game.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [],
+  imports: [GameComponent],
   template: `
-    <h1>{{ title() }}</h1>
+    <game />
   `,
   styles: [`
 
