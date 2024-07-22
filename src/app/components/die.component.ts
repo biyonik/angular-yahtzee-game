@@ -76,9 +76,8 @@ export default class DieComponent implements OnInit {
   toggleLocked = output<number>();
 
   computedButtonClass = computed(() => {
-    return `Die ${this.locked() ? 'Die-locked' : ''} ${
-      this.rolling() ? 'Die-rolling' : ''
-    }`;
+    return `Die ${this.locked() ? 'Die-locked' : ''} ${this.rolling() ? 'Die-rolling' : ''
+      }`;
   });
 
   computedDieClass = computed(
@@ -86,11 +85,7 @@ export default class DieComponent implements OnInit {
   );
 
   constructor() {
-    effect(() => {
-      console.log('DieComponent rendered with value:', this.val());
-      console.log('computedClass ', this.computedDieClass());
-    });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 }

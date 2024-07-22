@@ -14,7 +14,7 @@ import {
   template: `
     <tr
       class="RuleRow RuleRow-active"
-      (click)="doScoreHandler(this.scoreNameComputed())"
+      (click)="doScoreHandler(this.scoreName())"
     >
       <td class="RuleRow-name">{{ name() }}</td>
       <td class="RuleRow-score">{{ score() }}</td>
@@ -78,14 +78,15 @@ import {
 export default class RuleRowComponent implements OnInit {
   name = input.required<string>();
   score = input.required<number | undefined>();
+  scoreName = input.required<string>();
 
   doScore = output<any>();
 
   scoreNameComputed = computed(() => this.score()!.toString());
 
-  constructor() {}
+  constructor() { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   doScoreHandler(type: string) {
     this.doScore.emit(type);

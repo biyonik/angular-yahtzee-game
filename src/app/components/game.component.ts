@@ -145,19 +145,19 @@ export default class GameComponent implements OnInit {
       locked: [],
       rollsLeft: 3,
       scores: {
-        ones: 0,
-        twos: 0,
-        threes: 0,
-        fours: 0,
-        fives: 0,
-        sixes: 0,
-        threeOfKind: 0,
-        fourOfKind: 0,
-        fullHouse: 0,
-        smallStraight: 0,
-        largeStraight: 0,
-        yahtzee: 0,
-        chance: 0,
+        ones: undefined,
+        twos: undefined,
+        threes: undefined,
+        fours: undefined,
+        fives: undefined,
+        sixes: undefined,
+        threeOfKind: undefined,
+        fourOfKind: undefined,
+        fullHouse: undefined,
+        smallStraight: undefined,
+        largeStraight: undefined,
+        yahtzee: undefined,
+        chance: undefined,
       },
     });
 
@@ -186,7 +186,7 @@ export default class GameComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   buttonDisabledComputed = computed(
     () =>
@@ -213,18 +213,12 @@ export default class GameComponent implements OnInit {
   }
 
   handleRoll() {
-    if (this.gameState().rollsLeft > 0) {
-      this.generateDice();
-      this.gameStateSignal.update((state) => ({
-        ...state,
-        rollsLeft: state.rollsLeft - 1,
-      }));
-    } else {
-      this.gameStateSignal.update((state) => ({
-        ...state,
-        locked: Array(5).fill(true),
-      }));
-    }
+    this.gameStateSignal.update((state) => ({
+      dice: state.dice.map((die, idx) => (state.locked[idx] ? die : Math.ceil(Math.random() * 6))),
+      locked: state.rollsLeft > 1 ? state.locked : Array(5).fill(true),
+      rollsLeft: state.rollsLeft - 1,
+      scores: state.scores,
+    }))
   }
 
   async doScore(rulename: string) {
