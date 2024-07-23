@@ -20,7 +20,7 @@ const NUM_ROLLS = 3;
   template: `
     <div class="Game">
       <header class="Game-header">
-        <h1 class="App-title">Yathzee!</h1>
+        <h1 class="App-title">Yahtzee!</h1>
         <section class="Game-dice-section">
           @if(!gameIsOver()) {
           <dice
@@ -177,10 +177,7 @@ export default class GameComponent implements OnInit {
 
   gameIsOver = computed(() => {
     const scores = this.gameState().scores;
-    return (
-      Object.values(scores).filter((x) => x === undefined).length === 0 ||
-      this.gameState().rollsLeft === -1
-    );
+    return Object.values(scores).filter((x) => x === undefined).length === 0;
   });
 
   totalScore = computed(() => {
@@ -250,7 +247,7 @@ export default class GameComponent implements OnInit {
   private generateDice() {
     const dice = Array(NUM_DICE)
       .fill(1)
-      .map(() => Math.floor(Math.random() * 6));
+      .map(() => Math.ceil(Math.random() * 6));
     this.gameStateSignal.update((state) => ({ ...state, dice }));
   }
 
