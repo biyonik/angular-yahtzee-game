@@ -12,12 +12,9 @@ import {
   standalone: true,
   imports: [],
   template: `
-    <tr
-      class="RuleRow RuleRow-active"
-      (click)="doScoreHandler(this.scoreName())"
-    >
+    <tr [class]="classComputed()" (click)="doScoreHandler(this.scoreName())">
       <td class="RuleRow-name">{{ name() }}</td>
-      <td class="RuleRow-score">{{ score() }}</td>
+      <td class="RuleRow-score">{{ scoreDisplay() }}</td>
     </tr>
   `,
   styles: [
@@ -64,12 +61,12 @@ import {
       }
 
       .RuleRow-name {
-        width: 100%;
+        width: 100vw;
         text-align: left;
       }
 
       .RuleRow-score {
-        // width: 100%;
+        width: 25%;
         text-align: right;
       }
     `,
@@ -79,16 +76,30 @@ export default class RuleRowComponent implements OnInit {
   name = input.required<string>();
   score = input.required<number | undefined>();
   scoreName = input.required<string>();
+  description = input.required<string>();
 
   doScore = output<any>();
 
   scoreNameComputed = computed(() => this.score()!.toString());
 
-  constructor() { }
+  disabledComputed = computed(() => this.score() !== undefined);
 
-  ngOnInit(): void { }
+  classComputed = computed(() => {
+    return this.disabledComputed()
+      ? 'RuleRow RuleRow-disabled'
+      : 'RuleRow RuleRow-active';
+  });
+
+  scoreDisplay = computed(() =>
+    this.disabledComputed() ? this.score() : this.description()
+  );
+
+  constructor() {}
+
+  ngOnInit(): void {}
 
   doScoreHandler(type: string) {
+    if (this.disabledComputed()) return;
     this.doScore.emit(type);
   }
 }

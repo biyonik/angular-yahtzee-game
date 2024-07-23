@@ -12,9 +12,10 @@ export interface RuleParams {
   val?: number;
   count?: number;
   score?: number;
+  description?: string;
 }
 
-type Dice = number[]
+type Dice = number[];
 
 class Rule {
   constructor(params: RuleParams) {
@@ -47,10 +48,13 @@ class Rule {
 
 class TotalOneNumber extends Rule {
   val: number;
+  description: string;
   constructor(params: RuleParams) {
     super(params);
     this.val = params.val || 0;
+    this.description = params.description || '';
   }
+
   evalRoll = (dice: Dice) => {
     return this.val * this.count(dice, this.val);
   };
@@ -64,30 +68,62 @@ class TotalOneNumber extends Rule {
 class SumDistro extends Rule {
   evalRoll = (dice: Dice) => {
     // do any of the counts meet of exceed this distro?
-    return this.freq(dice).some(c => c >= this.count) ? this.sum(dice) : 0;
+    return this.freq(dice).some((c) => c >= this.count) ? this.sum(dice) : 0;
   };
 }
 
 /** Check if full house (3-of-kind and 2-of-kind) */
 
-class FullHouse {
-  // TODO
+class FullHouse extends Rule {
+  score: number;
+  description: string;
+
+  constructor(params: RuleParams) {
+    super(params);
+    this.score = params.score || 0;
+    this.description = params.description || '';
+  }
+
+  evalRoll = (dice: Dice) => {
+    const freqs = this.freq(dice);
+    return freqs.includes(2) && freqs.includes(3) ? this.score : 0;
+  };
 }
 
 /** Check for small straights. */
 
-class SmallStraight {
-  // TODO
+class SmallStraight extends Rule {
+  score: number;
+  description: string;
+
+  constructor(params: RuleParams) {
+    super(params);
+    this.score = params.score || 0;
+    this.description = params.description || '';
+  }
+
+  evalRoll = (dice: Dice) => {
+    const d = new Set(dice);
+    if (d.has(2) && d.has(3) && d.has(4) && (d.has(1) || d.has(5)))
+      return this.score;
+
+    if (d.has(3) && d.has(4) && d.has(5) && (d.has(2) || d.has(6)))
+      return this.score;
+
+    return 0;
+  };
 }
 
 /** Check for large straights. */
 
 class LargeStraight extends Rule {
   score: number;
+  description: string;
 
   constructor(params: RuleParams) {
     super(params);
     this.score = params.score || 0;
+    this.description = params.description || '';
   }
 
   evalRoll = (dice: Iterable<number>) => {
@@ -102,10 +138,12 @@ class LargeStraight extends Rule {
 
 class Yahtzee extends Rule {
   score: number;
+  description: string;
 
   constructor(params: RuleParams) {
     super(params);
     this.score = params.score || 0;
+    this.description = params.description || '';
   }
 
   evalRoll = (dice: Dice) => {
@@ -115,29 +153,47 @@ class Yahtzee extends Rule {
 }
 
 // ones, twos, etc score as sum of that value
-const ones = new TotalOneNumber({ val: 1 });
-const twos = new TotalOneNumber({ val: 2 });
-const threes = new TotalOneNumber({ val: 3 });
-const fours = new TotalOneNumber({ val: 4 });
-const fives = new TotalOneNumber({ val: 5 });
-const sixes = new TotalOneNumber({ val: 6 });
+const ones = new TotalOneNumber({ val: 1, description: '1 point per 1' });
+const twos = new TotalOneNumber({ val: 2, description: '2 points per 2' });
+const threes = new TotalOneNumber({ val: 3, description: '3 points per 3' });
+const fours = new TotalOneNumber({ val: 4, description: '4 points per 4' });
+const fives = new TotalOneNumber({ val: 5, description: '5 points per 5' });
+const sixes = new TotalOneNumber({ val: 6, description: '6 points per 6' });
 
 // three/four of kind score as sum of all dice
-const threeOfKind = new SumDistro({ count: 3 });
-const fourOfKind = new SumDistro({ count: 4 });
+const threeOfKind = new SumDistro({
+  count: 3,
+  description: 'Sum all dice if 3 are the same',
+});
+const fourOfKind = new SumDistro({
+  count: 4,
+  description: 'Sum all dice if 4 are the same',
+});
 
 // full house scores as flat 25
-const fullHouse = new SumDistro({ count: 25 }); // TODO
+const fullHouse = new FullHouse({
+  score: 25,
+  description: '25 points for a full house',
+});
 
 // small/large straights score as 30/40
-const smallStraight = new SumDistro({ count: 30 }); // TODO
-const largeStraight = new LargeStraight({ score: 40 });
+const smallStraight = new SmallStraight({
+  score: 30,
+  description: '30 points for a small straight',
+});
+const largeStraight = new LargeStraight({
+  score: 40,
+  description: '40 points for a large straight',
+});
 
 // yahtzee scores as 50
-const yahtzee = new Yahtzee({ score: 50 });
+const yahtzee = new Yahtzee({
+  score: 50,
+  description: '50 points for yahtzee',
+});
 
 // for chance, can view as some of all dice, requiring at least 0 of a kind
-const chance = new SumDistro({ count: 0 });
+const chance = new SumDistro({ count: 0, description: 'Sum of all dice' });
 
 export default {
   ones,
@@ -152,5 +208,5 @@ export default {
   smallStraight,
   largeStraight,
   yahtzee,
-  chance
+  chance,
 };

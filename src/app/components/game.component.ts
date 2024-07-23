@@ -10,6 +10,9 @@ import { GameState } from '../models/game.state.model';
 import DiceComponent from './dice.component';
 import ScoreTableComponent from './score-table.component';
 
+const NUM_DICE = 5;
+const NUM_ROLLS = 3;
+
 @Component({
   selector: 'game',
   standalone: true,
@@ -19,12 +22,15 @@ import ScoreTableComponent from './score-table.component';
       <header class="Game-header">
         <h1 class="App-title">Yathzee!</h1>
         <section class="Game-dice-section">
+          @if(!gameIsOver()) {
           <dice
             [dice]="gameState().dice"
             [locked]="gameState().locked"
             (toggleLocked)="handleToggleLocked($event)"
           />
+          }
           <div class="Game-button-wrapper">
+            @if(!gameIsOver()) {
             <button
               class="Game-reroll"
               (click)="handleRoll()"
@@ -32,12 +38,18 @@ import ScoreTableComponent from './score-table.component';
             >
               {{ gameState().rollsLeft }} Rerolls Left
             </button>
+            } @else {
+            <button class="Game-reroll" (click)="handleRestartGame()">
+              Restart Game
+            </button>
+            }
           </div>
         </section>
       </header>
       <score-table
         [scores]="gameState().scores"
         (doScore)="this.doScore($event)"
+        [totalScore]="totalScore()"
       />
     </div>
   `,
@@ -143,7 +155,7 @@ export default class GameComponent implements OnInit {
     signal<GameState>({
       dice: [],
       locked: [],
-      rollsLeft: 3,
+      rollsLeft: NUM_ROLLS,
       scores: {
         ones: undefined,
         twos: undefined,
@@ -163,6 +175,22 @@ export default class GameComponent implements OnInit {
 
   gameState = this.gameStateSignal.asReadonly();
 
+  gameIsOver = computed(() => {
+    const scores = this.gameState().scores;
+    return (
+      Object.values(scores).filter((x) => x === undefined).length === 0 ||
+      this.gameState().rollsLeft === -1
+    );
+  });
+
+  totalScore = computed(() => {
+    const scores = this.gameState().scores;
+    return Object.values(scores).reduce((acc, x) => {
+      if (x === undefined) return acc;
+      return acc! + x;
+    }, 0);
+  });
+
   protected readonly selectedRuleSignal: WritableSignal<string | null> = signal<
     string | null
   >(null);
@@ -178,7 +206,7 @@ export default class GameComponent implements OnInit {
       () =>
         this.gameStateSignal.update((state) => ({
           ...state,
-          locked: Array(5).fill(false),
+          locked: Array(NUM_DICE).fill(false),
         })),
       {
         allowSignalWrites: true,
@@ -186,7 +214,7 @@ export default class GameComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   buttonDisabledComputed = computed(
     () =>
@@ -194,10 +222,35 @@ export default class GameComponent implements OnInit {
       this.gameState().rollsLeft === 0
   );
 
+  handleRestartGame() {
+    this.gameStateSignal.update((state) => ({
+      dice: Array(NUM_DICE)
+        .fill(1)
+        .map(() => Math.ceil(Math.random() * 6)),
+      locked: Array(NUM_DICE).fill(false),
+      rollsLeft: NUM_ROLLS,
+      scores: {
+        ones: undefined,
+        twos: undefined,
+        threes: undefined,
+        fours: undefined,
+        fives: undefined,
+        sixes: undefined,
+        threeOfKind: undefined,
+        fourOfKind: undefined,
+        fullHouse: undefined,
+        smallStraight: undefined,
+        largeStraight: undefined,
+        yahtzee: undefined,
+        chance: undefined,
+      },
+    }));
+  }
+
   private generateDice() {
-    const dice = Array(5)
-      .fill(0)
-      .map(() => Math.floor(Math.random() * 6) + 1);
+    const dice = Array(NUM_DICE)
+      .fill(1)
+      .map(() => Math.floor(Math.random() * 6));
     this.gameStateSignal.update((state) => ({ ...state, dice }));
   }
 
@@ -214,11 +267,13 @@ export default class GameComponent implements OnInit {
 
   handleRoll() {
     this.gameStateSignal.update((state) => ({
-      dice: state.dice.map((die, idx) => (state.locked[idx] ? die : Math.ceil(Math.random() * 6))),
-      locked: state.rollsLeft > 1 ? state.locked : Array(5).fill(true),
+      dice: state.dice.map((die, idx) =>
+        state.locked[idx] ? die : Math.ceil(Math.random() * 6)
+      ),
+      locked: state.rollsLeft > 1 ? state.locked : Array(NUM_DICE).fill(true),
       rollsLeft: state.rollsLeft - 1,
       scores: state.scores,
-    }))
+    }));
   }
 
   async doScore(rulename: string) {
@@ -229,8 +284,8 @@ export default class GameComponent implements OnInit {
         ...state.scores,
         [rulename]: ruleFn.evalRoll(this.gameState().dice),
       },
-      rollsLeft: state.rollsLeft > 0 ? state.rollsLeft - 1 : 0,
-      locked: Array(5).fill(false),
+      // rollsLeft: NUM_ROLLS,
+      // locked: Array(5).fill(false),
     }));
   }
 
